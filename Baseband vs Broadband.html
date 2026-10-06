@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baseband vs Broadband</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,700..900&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050505;--card:#121212;--line:#262626;--tx:#f5f5f5;--mu:#9b9b9b;--y:#ffd400;--c:#3de0ff;--p:#ff4d8d;--g:#7cff6b;--good:#3ddc84;--bad:#ff5468;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 17px/1.55 Figtree,system-ui,sans-serif;overflow-x:hidden}
+h1,h2,h3{font-family:Archivo,Impact,sans-serif;font-weight:900;margin:0;line-height:.95;letter-spacing:-.01em}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+:focus-visible{outline:3px solid var(--y);outline-offset:3px}
+.wrap{max-width:980px;margin:0 auto;padding:0 18px}
+nav{position:sticky;top:0;z-index:20;background:rgba(5,5,5,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:10px}
+nav b{font-family:Archivo;font-weight:900;font-size:17px;white-space:nowrap}
+nav b i{font-style:normal;color:var(--y)}
+.go{background:var(--y);color:#000;font-weight:700;padding:10px 16px;border-radius:999px;white-space:nowrap;font-size:15px}
+.speaking>.wrap{outline:2px solid var(--y);outline-offset:6px;border-radius:14px}
+.hero{padding:34px 0 20px}
+.hero h1{font-size:clamp(54px,15vw,140px)}
+.hero h1 em{font-style:normal;color:var(--y)}
+.sub{color:var(--mu);font-size:19px;max-width:40ch;margin:16px 0 24px}
+.sw{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px}
+.sw button{position:relative;z-index:1;padding:14px 8px;font-weight:700;border-radius:999px;color:var(--mu);transition:color .3s}
+.sw button[aria-selected=true]{color:#000}
+.th{position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);border-radius:999px;background:var(--y);transition:transform .45s cubic-bezier(.6,0,.2,1),background .45s}
+body.broad .th{transform:translateX(100%);background:var(--c)}
+.road{margin-top:14px;border-radius:18px;overflow:hidden;border:2px solid var(--line);background:#0c0c0c}
+canvas{width:100%;height:340px;display:block}
+.say{font-size:clamp(21px,5vw,28px);font-weight:700;line-height:1.25;margin:18px 0 6px;min-height:3.8em}
+.say span{color:var(--y)}body.broad .say span{color:var(--c)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:15px}
+.chip b{color:var(--y)}body.broad .chip b{color:var(--c)}
+.blk{padding:64px 0 6px}
+.blk h2{font-size:clamp(38px,9vw,72px);margin-bottom:22px}
+.cards{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px}
+.card h3{font-size:38px;margin-bottom:10px}
+.card.a h3{color:var(--y)}.card.b h3{color:var(--c)}
+.card p{margin:0 0 14px}
+.card .big{font-size:20px;font-weight:700;line-height:1.3}
+.tag{display:inline-block;border:1px solid #3a3a3a;border-radius:999px;padding:4px 12px;font-size:14px;margin:0 6px 6px 0;color:var(--mu)}
+.d{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:10px}
+.d h4{margin:0 0 10px;font-size:15px;color:var(--mu);font-weight:500}
+.d .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.d small{display:block;font-weight:700;font-size:13px;margin-bottom:2px}
+.d .cols>div:first-child small{color:var(--y)}.d .cols>div:last-child small{color:var(--c)}
+.d strong{font-size:19px;line-height:1.25;display:block}
+.m{margin:0 0 20px}
+.m h4{margin:0 0 8px;font-size:17px;font-weight:700}
+.bar{height:14px;background:#1b1b1b;border-radius:8px;margin-bottom:6px;overflow:hidden;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:8px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.bar.y i{background:var(--y)}.bar.c i{background:var(--c)}
+.in .bar i{width:calc(var(--v)*20%)}
+.key{display:flex;gap:18px;margin-bottom:18px;font-size:15px;color:var(--mu)}
+.key i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+@media(max-width:700px){.pc{grid-template-columns:1fr}}
+.pc h3{font-size:34px;margin-bottom:8px}
+.pc ul{list-style:none;margin:0;padding:0}
+.pc li{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-weight:500}
+.pc li:before{flex:none;width:24px;height:24px;display:grid;place-items:center;font-weight:900;color:#000;border-radius:7px}
+.pro li:before{content:"+";background:var(--good)}.con li:before{content:"–";background:var(--bad)}
+.q{font-family:Archivo;font-weight:800;font-size:clamp(26px,6vw,40px);line-height:1.05;margin:10px 0 20px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px}
+.prog{height:8px;background:#222;border-radius:8px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--y),var(--c));transition:width .5s}
+.opts{display:grid;gap:10px}
+.opts button{display:flex;gap:14px;align-items:center;text-align:left;background:#1a1a1a;padding:16px;border-radius:14px;border:2px solid transparent;font-weight:500;min-height:56px}
+.opts button b{flex:none;width:30px;height:30px;border-radius:8px;background:#fff;color:#000;display:grid;place-items:center}
+.opts button:hover:not(:disabled){border-color:var(--y)}
+.opts button.ok{background:var(--good);color:#00230f}.opts button.no{background:var(--bad);color:#fff}
+.fb{min-height:64px;margin-top:14px;color:#cfcfcf}
+.cta{background:var(--y);color:#000;font-weight:700;padding:13px 24px;border-radius:999px}
+.score{font-family:Archivo;font-weight:900;font-size:clamp(100px,30vw,200px);line-height:.85}
+#cap{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:calc(100% - 20px);max-width:760px;background:#fff;color:#000;border-radius:16px;padding:12px 12px 12px 16px;z-index:30;display:none;gap:12px;align-items:center;font-size:15px;line-height:1.35}
+#cap.on{display:flex}#cap span{flex:1}
+#cap button{background:#000;color:#fff;font-weight:700;padding:10px 16px;border-radius:999px}
+footer{height:120px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><b>Base<i>band</i> vs Broadband</b><button class="go" id="auto">▶ Auto explain</button></div></nav>
+
+<header class="hero" id="home" data-say="[base]Hello everyone! Today we learn about baseband and broadband. Both are ways to send data through a cable. Think of the cable as a road. Baseband is a one lane road. Only one signal can use it at a time, so devices take turns.|[broad]Broadband is a big highway with many lanes. The cable is split into channels, so TV, internet and phone signals all travel together at the same time.">
+<div class="wrap">
+<h1>One lane<br><em>or many?</em></h1>
+<p class="sub">Baseband and broadband are two ways to send data through a cable. Tap to switch and watch the road change.</p>
+<div class="sw" role="tablist"><i class="th"></i><button role="tab" data-m="base" aria-selected="true">Baseband</button><button role="tab" data-m="broad" aria-selected="false">Broadband</button></div>
+<div class="road"><canvas id="cv" role="img" aria-label="Animated road. Baseband is one wide lane with one big car at a time. Broadband is four lanes with many cars moving at once."></canvas></div>
+<p class="say" id="say"></p>
+<div class="chips" id="chips"></div>
+</div></header>
+
+<section id="what" class="blk" data-say="Let's see what they mean. Baseband uses the whole cable for one digital signal at a time. Like a one lane road, one car goes at once. You see it in Ethernet networks, like a school computer lab. Broadband splits the cable into many channels, so many signals go together. Like a highway with many lanes. Cable TV, cable internet and DSL use broadband.">
+<div class="wrap"><h2>What are they?</h2>
+<div class="cards"><div class="card a"><h3>Baseband</h3><p class="big">One signal uses the whole cable.</p><p>Devices take turns, like cars on a one lane road.</p><span class="tag">Ethernet</span><span class="tag">USB</span><span class="tag">School computer lab</span></div>
+<div class="card b"><h3>Broadband</h3><p class="big">Many signals share one cable.</p><p>The cable is split into channels, like lanes on a highway.</p><span class="tag">Cable TV</span><span class="tag">Cable internet</span><span class="tag">DSL</span></div></div></div></section>
+
+<section id="compare" class="blk" data-say="Now the differences. Baseband uses digital signals, broadband uses analog signals. Baseband sends one signal at a time, broadband sends many. In baseband, signals take turns. In broadband, each signal gets its own channel. Baseband works over short distances, broadband goes far. Baseband is cheap and simple. Broadband costs more and is harder to set up.">
+<div class="wrap"><h2>The differences</h2><div id="rows"></div></div></section>
+
+<section id="score" class="blk" data-say="[base]Let's compare them. Baseband wins on cost and on being simple. Its good points: it is easy to set up, cheap, and works well on short links. Its bad points: only one signal at a time, short distance, and devices must wait for their turn.|[broad]Broadband wins on distance and on carrying many signals. Its good points: many signals at once, long distance, and voice, video and data together. Its bad points: it costs more, needs extra equipment like modems, and is harder to set up.">
+<div class="wrap"><h2>Who wins?</h2>
+<div class="key"><span><i style="background:var(--y)"></i>Baseband</span><span><i style="background:var(--c)"></i>Broadband</span></div>
+<div id="fly"></div>
+<div class="sw" style="margin-top:26px" role="tablist"><i class="th"></i><button role="tab" data-m="base" aria-selected="true">Baseband</button><button role="tab" data-m="broad" aria-selected="false">Broadband</button></div>
+<div class="pc" id="pc"></div></div></section>
+
+<section id="quiz" class="blk" data-say=""><div class="wrap"><h2>Your turn</h2><div class="panel"><div class="prog"><i id="pb"></i></div><div id="qbox"></div></div></div></section>
+<footer></footer>
+<div id="cap" role="status"><span id="capt"></span><button id="stop">■ Stop</button></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const MODE={base:{say:'The <span>whole cable</span> carries <span>one signal</span>. Devices take turns.',chips:[["Signals at once","1"],["Signal","Digital"],["Example","School computer lab"]]},
+broad:{say:'The cable is split into <span>channels</span>. Many signals travel <span>at the same time</span>.',chips:[["Signals at once","Many"],["Signal","Analog"],["Example","Cable TV"]]}};
+const PC={base:{pro:["Easy to set up","Cheap","Works well on short links","Little signal loss nearby"],con:["Only one signal at a time","Short distance only","Devices wait for their turn","Can't mix TV, voice and data"]},
+broad:{pro:["Many signals at once","Goes a long way","Voice, video and data together","Easy to add new channels"],con:["Costs more","Needs modems and amplifiers","Harder to set up and fix","Can pick up more noise"]}};
+const ROWS=[["Type of signal","Digital","Analog"],["Signals at once","One","Many"],["How they share","Take turns","Own channel each"],["Distance","Short","Long"],["Cost","Cheap and simple","Costly and harder"],["Example","Ethernet","Cable TV"]];
+$('#rows').innerHTML=ROWS.map(r=>`<div class="d"><h4>${r[0]}</h4><div class="cols"><div><small>Baseband</small><strong>${r[1]}</strong></div><div><small>Broadband</small><strong>${r[2]}</strong></div></div></div>`).join('');
+const SC=[["Cheap",5,2],["Easy to set up",5,2],["Goes far",1,5],["Many signals at once",1,5]];
+$('#fly').innerHTML=SC.map(s=>`<div class="m"><h4>${s[0]}</h4><div class="bar y"><i style="--v:${s[1]}"></i></div><div class="bar c"><i style="--v:${s[2]}"></i></div></div>`).join('');
+new IntersectionObserver(e=>e.forEach(x=>x.isIntersecting&&x.target.classList.add('in')),{threshold:.2}).observe($('#fly'));
+
+let mode='base',target=0;
+function setMode(m){mode=m;target=m==='broad'?1:0;document.body.classList.toggle('broad',m==='broad');
+ $$('.sw button').forEach(b=>b.setAttribute('aria-selected',b.dataset.m===m));
+ const d=MODE[m],p=PC[m];$('#say').innerHTML=d.say;$('#chips').innerHTML=d.chips.map(c=>`<span class="chip">${c[0]}: <b>${c[1]}</b></span>`).join('');
+ $('#pc').innerHTML=`<div class="pro"><h3>Good points</h3><ul>${p.pro.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="con"><h3>Bad points</h3><ul>${p.con.map(x=>`<li>${x}</li>`).join('')}</ul></div>`}
+$$('.sw button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));setMode('base');
+
+/* road canvas */
+const cv=$('#cv'),cx=cv.getContext('2d'),still=matchMedia('(prefers-reduced-motion:reduce)').matches;let W,H,t=0,k=0;
+function size(){const r=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*r;cv.height=H*r;cx.setTransform(r,0,0,r,0,0)}
+new ResizeObserver(size).observe(cv);size();
+const CL=['#ffd400','#3de0ff','#ff4d8d','#7cff6b'],NM=['TV','Internet','Phone','Radio'];
+const hx=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)),mix=(a,b,f)=>{const A=hx(a),B=hx(b);return`rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*f)).join()})`};
+function draw(){k+=(target-k)*.07;cx.clearRect(0,0,W,H);
+ const n=4,e=10,lh=(H-e*2)/n,gap=Math.max(W*.62,230);
+ cx.fillStyle='#ffd400';cx.fillRect(0,2,W,3);cx.fillRect(0,H-5,W,3);
+ cx.strokeStyle='rgba(255,255,255,'+(.55*k)+')';cx.lineWidth=2;cx.setLineDash([16,14]);
+ for(let i=1;i<n;i++){cx.beginPath();cx.moveTo(-((t*3)%30),e+i*lh);cx.lineTo(W,e+i*lh);cx.stroke()}cx.setLineDash([]);
+ for(let i=0;i<n;i++){const y=e+i*lh,col=mix(CL[0],CL[i],k),ip=Math.max(2,9*k),
+  sp=2.4+k*(i%2?1.3:.2)*(1+i*.25),w=Math.min(W*.3,150)-k*(30-i*7),off=k*i*83,h=lh-ip*2;
+  for(let x=((t*sp+off)%gap)-gap;x<W;x+=gap){cx.fillStyle=col;cx.shadowColor=col;cx.shadowBlur=16;cx.beginPath();cx.roundRect(x,y+ip,w,h,Math.min(14,h/2));cx.fill();cx.shadowBlur=0;
+   cx.fillStyle='rgba(255,255,255,.95)';const hh=Math.min(10,h*.2);cx.fillRect(x+w-6,y+ip+h*.18,5,hh);cx.fillRect(x+w-6,y+ip+h*.82-hh,5,hh)}
+  if(k>.5){cx.globalAlpha=(k-.5)*2;cx.font='700 13px Figtree,sans-serif';const tw=cx.measureText(NM[i]).width+16;cx.fillStyle='rgba(0,0,0,.75)';cx.fillRect(8,y+lh/2-12,tw,24);cx.fillStyle='#fff';cx.fillText(NM[i],16,y+lh/2+5);cx.globalAlpha=1}}
+ if(k<.5){cx.globalAlpha=1-k*2;cx.font='700 13px Figtree,sans-serif';cx.fillStyle='rgba(0,0,0,.75)';cx.fillRect(8,H/2-12,170,24);cx.fillStyle='#fff';cx.fillText('One lane for everything',16,H/2+5);cx.globalAlpha=1}
+ if(!still)t++;requestAnimationFrame(draw)}
+draw();
+
+/* quiz */
+const QS=[{q:"Which one uses the whole cable for ONE signal?",o:["Baseband","Broadband"],a:0,e:"Baseband gives the whole cable to one signal."},
+{q:"How does broadband share the cable?",o:["Signals take turns","Each signal gets its own channel","It only sends one signal"],a:1,e:"Broadband splits the cable into channels (FDM)."},
+{q:"Cable TV is an example of…",o:["Baseband","Broadband"],a:1,e:"Cable TV sends many channels on one cable."},
+{q:"Which one is cheaper and simpler?",o:["Baseband","Broadband"],a:0,e:"Baseband needs no modems or amplifiers."},
+{q:"Which one can go a long distance?",o:["Baseband","Broadband"],a:1,e:"Broadband can travel far with amplifiers."}];
+let qi=0,sc=0,speak=false;
+function renderQ(){const Q=QS[qi];$('#pb').style.width=(qi/QS.length*100)+'%';
+ $('#qbox').innerHTML=`<div style="color:var(--mu);margin-top:16px">Question ${qi+1} of ${QS.length}</div><div class="q">${Q.q}</div><div class="opts">${Q.o.map((o,i)=>`<button data-i="${i}"><b>${'ABC'[i]}</b>${o}</button>`).join('')}</div><div class="fb" id="fb"></div>`;
+ $$('.opts button').forEach(b=>b.onclick=()=>pick(+b.dataset.i))}
+function pick(i){const Q=QS[qi],bs=$$('.opts button');bs.forEach(b=>b.disabled=true);bs[Q.a].classList.add('ok');if(i!==Q.a)bs[i].classList.add('no');else sc++;
+ const m=(i===Q.a?'Correct! ':'Not quite. ')+Q.e;$('#fb').innerHTML=m+`<br><br><button class="cta" id="nx">${qi<QS.length-1?'Next question':'See my score'}</button>`;
+ $('#nx').onclick=()=>{qi++;qi<QS.length?(renderQ(),askQ()):done()};if(speak)say(m)}
+function askQ(){if(speak)say("Question "+(qi+1)+". "+QS[qi].q+" Options: "+QS[qi].o.join(", or ")+".")}
+function done(){$('#pb').style.width='100%';const m=sc===5?"Perfect score!":sc>=3?"Nice work!":"Good try. Read it again and retry!";
+ $('#qbox').innerHTML=`<div class="score" style="margin-top:16px">${sc}/5</div><p style="font-size:22px;margin:10px 0 20px">${m}</p><button class="cta" id="re">Try again</button>`;$('#re').onclick=()=>{qi=0;sc=0;renderQ()};
+ if(speak){say("You scored "+sc+" out of 5. "+m+" Thank you for listening!");speak=false}}
+renderQ();
+
+/* auto explain */
+const synth=window.speechSynthesis;let run=false,timer=null;
+function say(t,cb){clearTimeout(timer);if(synth){synth.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.95;if(cb)u.onend=cb;synth.speak(u)}else if(cb)timer=setTimeout(cb,t.length*55)}
+function mark(s){$$('section,header').forEach(x=>x.classList.toggle('speaking',x===s))}
+function stop(){run=false;speak=false;clearTimeout(timer);synth&&synth.cancel();mark(null);$('#cap').classList.remove('on');$('#auto').textContent='▶ Auto explain'}
+function seg(parts,j,next){if(!run)return;if(j>=parts.length)return next();let p=parts[j];const m=p.match(/^\[(base|broad)\]/);if(m){setMode(m[1]);p=p.slice(m[0].length)}
+ $('#capt').textContent=p.length>120?p.slice(0,120)+'…':p;say(p,()=>seg(parts,j+1,next))}
+function runSec(i){if(!run)return;const S=$$('[data-say]').filter(s=>s.dataset.say);
+ if(i>=S.length){const q=$('#quiz');mark(q);q.scrollIntoView({behavior:'smooth'});speak=true;$('#capt').textContent="Your turn! Answer the questions.";say("Now it's your turn! I will ask you five questions.",()=>{if(run){run=false;askQ()}});return}
+ const s=S[i];mark(s);s.scrollIntoView({behavior:'smooth'});seg(s.dataset.say.split('|'),0,()=>runSec(i+1))}
+$('#auto').onclick=()=>{if(run){stop();return}run=true;$('#auto').textContent='■ Stop';$('#cap').classList.add('on');qi=0;sc=0;renderQ();setMode('base');runSec(0)};
+$('#stop').onclick=stop;
+</script>
+</body>
+</html>
